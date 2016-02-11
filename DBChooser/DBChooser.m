@@ -120,18 +120,28 @@
 
 + (NSArray*)dbc_parseFilesJson:(NSString*)filesJson
 {
-    if ([filesJson length]) {
-        NSArray *filesJsonDict = [NSJSONSerialization JSONObjectWithData:[filesJson dataUsingEncoding:NSUTF8StringEncoding]
-                                                                 options:0 error:nil];
-        NSMutableArray *results = [NSMutableArray arrayWithCapacity:[filesJsonDict count]];
-        for (NSDictionary *fileJson in filesJsonDict) {
-            DBChooserResult *result = [[DBChooserResult alloc] initWithDictionary:fileJson];
-            [results addObject:result];
+    if ([filesJson length])
+    {
+        id jsonObject = [NSJSONSerialization JSONObjectWithData:[filesJson dataUsingEncoding:NSUTF8StringEncoding]
+                                                             options:0 error:nil];
+        if ([jsonObject isKindOfClass: NSArray.class])
+        {
+            NSArray *filesJsonDict = jsonObject;
+            NSMutableArray *results = [NSMutableArray arrayWithCapacity:[filesJsonDict count]];
+            for (NSDictionary *fileJson in filesJsonDict) {
+                DBChooserResult *result = [[DBChooserResult alloc] initWithDictionary:fileJson];
+                [results addObject:result];
+            }
+            return results;
         }
-        return results;
-    } else {
-        return nil;
+        else if ([jsonObject isKindOfClass: NSDictionary.class])
+        {
+            DBChooserResult *result = [[DBChooserResult alloc] initWithDictionary: jsonObject];
+            if (result)
+                return @[result];
+        }
     }
+    return nil;
 }
 
 // look for an app key in the info plist (the app should have a url scheme that looks like "db-(appkey)://"
